@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TruthLens - Fake News Detector</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #fff; color: #111; line-height: 1.6; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; border-bottom: 1px solid #ddd; }
+    header h2 { font-weight: bold; }
+    header nav a { margin-left: 20px; text-decoration: none; color: #111; font-weight: 500; }
+    main { padding: 40px; max-width: 1100px; margin: auto; }
+    h1 { font-size: 2rem; margin-bottom: 10px; }
+    p.subtitle { color: #555; margin-bottom: 30px; }
+
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    .buttons { margin-bottom: 15px; }
+    .buttons button { padding: 8px 14px; margin-right: 8px; border: 1px solid #ccc; border-radius: 6px; background: #f8f8f8; cursor: pointer; }
+    .buttons button.active { background: #111; color: #fff; }
+    textarea { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; font-size: 1rem; }
+    .submit-btn { margin-top: 15px; padding: 12px 20px; border: none; border-radius: 8px; background: #111; color: #fff; font-weight: bold; cursor: pointer; }
+
+    .samples h2 { margin-bottom: 20px; }
+    .sample-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 20px; }
+    .sample-card { border: 1px solid #ddd; border-radius: 12px; padding: 15px; transition: 0.2s; cursor: pointer; }
+    .sample-card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .tag { display: inline-block; padding: 4px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; }
+    .fake { background: #fee2e2; color: #b91c1c; }
+    .real { background: #dcfce7; color: #15803d; }
+    .mixed { background: #fef9c3; color: #92400e; }
+    .satire { background: #e0f2fe; color: #0369a1; }
+    .sample-card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .meta { font-size: 0.85rem; color: #555; margin-top: 10px; }
+
+    .stats { border: 1px solid #ddd; border-radius: 12px; padding: 20px; text-align: center; display: flex; justify-content: space-around; margin: 40px 0; }
+    .stats div { flex: 1; }
+    .stats h3 { font-size: 1.4rem; }
+
+    footer { background: #f9fafb; padding: 30px 40px; border-top: 1px solid #ddd; display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 20px; }
+    footer h4 { margin-bottom: 10px; font-size: 1rem; }
+    footer a { display: block; text-decoration: none; color: #555; margin-bottom: 6px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>TruthLens <span style="font-size:0.9rem; font-weight:400;">AI-Powered</span></h2>
+    <nav>
+      <a href="#">About</a>
+      <a href="#">API</a>
+      <a href="#">Help</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Detect Fake News with AI</h1>
+    <p class="subtitle">Analyze news articles using advanced machine learning to determine credibility. Get detailed explanations and confidence scores for every prediction.</p>
+
+    <!-- Input Card -->
+    <div class="card">
+      <h3>Input Method</h3>
+      <div class="buttons">
+        <button onclick="setMode(event, 'title')">Title Only</button>
+        <button onclick="setMode(event, 'description')">Description</button>
+        <button class="active" onclick="setMode(event, 'full')">Full Article</button>
+      </div>
+      <h3>News Content (Paste your article below)</h3>
+      <textarea id="news" rows="6" placeholder="Paste the full news article text here for analysis..."></textarea>
+      <button class="submit-btn" onclick="detectNews()">Analyze Article</button>
+      <div id="result" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- Sample Articles -->
+    <div class="samples">
+      <h2>Try Sample Articles</h2>
+      <div class="sample-grid">
+        <div class="sample-card" onclick="useSample('Fake News Sample...')">
+          <span class="tag fake">Fake News</span>
+          <h3>BREAKING: Scientists SHOCKED by Climate Discovery That Changes Everything!</h3>
+          <p>This revolutionary breakthrough has been hidden from the public...</p>
+          <div class="meta">2 min read · 87% fake confidence</div>
+        </div>
+        <div class="sample-card" onclick="useSample('Real News Sample...')">
+          <span class="tag real">Real News</span>
+          <h3>New Climate Research Published in Nature Shows Gradual Temperature Trends</h3>
+          <p>A peer-reviewed study published today...</p>
+          <div class="meta">4 min read · 92% real confidence</div>
+        </div>
+        <div class="sample-card" onclick="useSample('Mixed News Sample...')">
+          <span class="tag mixed">Mixed Signals</span>
+          <h3>Tech Company Announces Revolutionary Battery Technology</h3>
+          <p>The startup claims their new battery can charge...</p>
+          <div class="meta">3 min read · 64% uncertain</div>
+        </div>
+        <div class="sample-card" onclick="useSample('Satire News Sample...')">
+          <span class="tag satire">Satire</span>
+          <h3>Local Man Discovers Internet Still Working Despite Not Paying WiFi Bill</h3>
+          <p>"I thought they would cut me off immediately," says area resident...</p>
+          <div class="meta">1 min read · 98% satirical</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div><h3>94.7%</h3><p>Accuracy Rate</p></div>
+      <div><h3>2.3s</h3><p>Avg Analysis Time</p></div>
+      <div><h3>500k+</h3><p>Articles Analyzed</p></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <h4>TruthLens</h4>
+      <p style="font-size:0.9rem; color:#555;">AI-powered fake news detection to help you navigate the information landscape with confidence.</p>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <a href="#">How it Works</a>
+      <a href="#">API Access</a>
+      <a href="#">Pricing</a>
+      <a href="#">Accuracy Reports</a>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <a href="#">Research Papers</a>
+      <a href="#">Blog</a>
+      <a href="#">FAQ</a>
+      <a href="#">Support</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="#">About Us</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </footer>
+
+<script>
+  function setMode(event, mode) {
+    document.querySelectorAll(".buttons button").forEach(btn => btn.classList.remove("active"));
+    event.target.classList.add("active");
+  }
+
+  function useSample(text) {
+    document.getElementById("news").value = text;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function detectNews() {
+    const newsText = document.getElementById("news").value.trim();
+    if (!newsText) return;
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "Analyzing... ⏳";
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ news: newsText })
+      });
+      const data = await response.json();
+
+      if (data.error) {
+        resultDiv.innerHTML = `<span style="color:red;">${data.error}</span>`;
+      } else {
+        resultDiv.innerHTML = `<b>Prediction:</b> ${data.prediction} <br><b>Confidence:</b> ${data.confidence}%`;
+      }
+    } catch (err) {
+      resultDiv.innerHTML = `<span style="color:red;">Error connecting to backend</span>`;
+    }
+  }
+</script>
+</body>
+</html>
